@@ -10,9 +10,7 @@ class Timer2Page extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create:(context) => TimerBloc(),
-      child:Timer2View(
-        key: UniqueKey(),
-      ) ,
+      child:Timer2View() ,
     );
   }
 }

@@ -85,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Timer2Page(),
+                      builder: (context) => Timer2Page( ),
                     ));
               },
               child: Text(

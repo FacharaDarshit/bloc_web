@@ -5,7 +5,6 @@ class Ticker {
         .take(ticks);
   }
   Stream<int> tick_2({required int ticks}) {
-    return Stream.periodic(const Duration(seconds: 1), (x) => ticks + x)
-        .take(ticks);
+    return Stream.periodic(const Duration(seconds: 1), (x) =>  x+1);
   }
 }
