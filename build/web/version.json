@@ -1,1 +1,5 @@
 {"app_name":"block_demo","version":"1.0.0","build_number":"1","package_name":"block_demo"}
+
+//npm install -g http-server
+//http-server -p 8000
+//http://localhost:8000
