@@ -3,3 +3,200 @@
 //npm install -g http-server
 //http-server -p 8000
 //http://localhost:8000
+/*import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart' as gt;
+import 'package:storybook/di_container.dart';
+import 'package:storybook/notifications/bloc/notification_bloc.dart';
+import 'package:storybook/notifications/screen/notification_screen.dart';
+import 'package:storybook/theme/color_const.dart';
+import 'package:storybook/util/font_family.dart';
+import 'package:storybook/util/string_const.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../../../main.dart';
+class SplashView extends StatelessWidget {
+  final Widget splashImage;
+  const SplashView({super.key, required this.splashImage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+       floatingActionButton:  FloatingActionButton(
+          onPressed: ()async {
+            String user2Token = "f838yCkzTkuZaPGNatkYcs:APA91bE_O4RSj1FTD2PAThDkY8TmxUl70O5tl7La-Kj6mIqvVbBsLdR9iDHcC5AileKNQ7OwAC8Pk_OhNDz9x2rkiO1Exk4ivRU0BfbC28TB_ce7pZJZTNk"; // Get from your database
+            String token = await getKey();
+           var r= await http.post(
+              Uri.parse(
+                  'https://fcm.googleapis.com/v1/projects/story-book-56795/messages:send'),
+              headers: <String, String>{
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+              },
+              body: jsonEncode(<String, dynamic>{
+                "message": {
+                  "token":
+                  user2Token,
+                  "notification": {
+                    "body": 'This is the push notification',
+                    "title": 'Push Notification',
+                  },
+                  "data": {"story_id": "story_12345"}
+                }
+              }),
+            );
+           print(r.statusCode);
+            print('toen');
+          },
+          child: Icon(Icons.send),
+        ),
+      backgroundColor: ColorConst.getPrimaryColor(context),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            splashImage,
+            Text(
+              StringConst.splash_name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: FontFamily.montserratSemibold,
+                fontSize: 40,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+Future<void> printFCMToken() async {
+  try {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    print('Notification permissions: ${settings.authorizationStatus}');
+    String? token = await messaging.getToken();
+    if (token != null) {
+      print('FCM Token: $token');
+    } else {
+      print('Failed to get FCM token.');
+    }
+  } catch (e) {
+    print('Error getting FCM token: $e');
+  }
+
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  print(".  ----------------${sp.getStringList("notificationList")}");
+  print(".  ----------------${sp.getStringList("notificationList")}");
+}
+
+//1 for the latest story 4 columns
+//length 3
+//tbl_latest_story
+
+//1 for the story 7 Columns
+//30
+//tbl_topics
+
+//1 table for the category 3 columns
+//length 8
+//tbl_category
+
+
+Future<String> getKey()async{
+  final scopes = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/firebase.database',
+    'https://www.googleapis.com/auth/firebase.messaging',
+  ];
+  final client = await clientViaServiceAccount(
+      ServiceAccountCredentials.fromJson(
+          {
+            "type": "service_account",
+            "project_id": "story-book-56795",
+            "private_key_id": "4bc9df2354d8b24c8b93bbb9d5694d7f1777f79c",
+            "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDY7CZg4K2k+hXj\nBjKyKRCDOZGkOFclszn8wOgI9Yir1D6S8+02r9Pl7S/Te5tUlPq0dGkUzEFH9eDz\nEl2Rd9uU5Mm6S0a9N/dtjd3ubUnuhQO9sJs7Ka0PVIZqbS+jYRRj02EckPhZcR3T\nWgKlsWk1svxmU+ZgYQ055Vzk32dQ/MYs4d+mTY30hWfBj/PWptIGfp6DnTLC1qBM\nZAZJjdmMJ8YSnJBUuJd33tB2//xLUoUINBDgzGKqRTFKNgrgY97Ou00MFoL2U2vT\n9pXKNJZK943n3PWQPd7XdcNTiyy3fSaVwczz2rBiO6Qbwv8sOytlUaKJiDH9J8tL\nbBGhnAtBAgMBAAECggEAMWhAKYqjIlNvzsCnpVqjDzB6kqvedZDH4WDSuM+r7G8w\nPWpfmjgcDF+kqAecTnyMSbPGB12qdMh1Dwgc1bg2BEjEBbGFkC2CJqrMZLTxxOj4\n/CiQgr4wU7CN2Qm7cvv2l/IaSVZfqoeQIoZ62eB5tShqQqhTbZpNV+V87ghQUOqG\nlMqv0lJ5xlx25PQSRCFbNysWxOiDxssRFRw44gQFOJwE2IqWl/sxAOWBJePRVTHl\nDFkaiv07JmhTFZsWLccqZuXZp/YGSWJvPIA4mdDp98DBV/R8jCQezlxJ94dzwYb/\nbU5hyJWrUZg2d3V7s5Ac/AI28ETA6KSJexEYmAInUQKBgQDziA4BcV5YRc6RGMHw\nwmTqQwxWZaXf8J7hypIe7FBL2DueBtiYUp+4O60a4J9VyLOjxepxcpKOFbSFCXQj\nHwYAwygtw+LGeE4TdvCrewVWFdiJFd3C/TA8HVwxtzTy823KxoDMsSgbc39Yu5X4\nw3+E9Ls2/Y0ExTa52849C9NlPQKBgQDkB1VXSVrpLbTylvyAlJBlQlXDGcbPqziW\nLyJJWyH0dKJnLuGrpWMh4QhTRq507dJ7AXUeDGNmYToFn5ykSf7wNMPWEkU5pZuw\nkU5WqcemjEzO2pMpBzeAAcBh61cc0RkrVo34IcdaK/PO8KHdumwZNNVGt5lmlDOk\njn53+PwGVQKBgF+LUXNfdxRKzvA+Nliu68i85WpAFwP082DCiPF45UfcXgdxyCh6\nwg8V2qRg3CJby57FV2WK/dSgz2Iig14EHebOqkTKRX54VKluUJ32dfGAQKQH4ClQ\nDEyJeFJI/o0S1FBp8L5eAs5CUgQOFJi0mqMfIRRCBcGJXh8tDY0FxrpBAoGAPSWS\nRvPOwxSUnzDJyRkNl3mwUb8JxwpdBDjjctRTSKA2JIE31rVk3eLgPqSHh6d2d7Gu\nXD5qMTwFORjSAmQtTvB3S2Je2dSE6VYtsaOZfBnHRvjp2WisA1F0600WcQ3JOAvf\nyhgUwyNiH637Wd/xuNioEGyPYCiBqLDlTPqhankCgYAPwjLiyoUmSX5f/oIxnwCi\nPSORbbFuuRYVkly20EHOIN7fSEIBF7Jbi6fvq8BupsmxsA70XszQUgRo9m4XPzh9\nQOY3lBIoW30yK/48eBACk/A8v80mM1DZZeS2/uNBmouwsQ14i8JSO05tckGKaFNM\nsODsUZBO2x7ey0k4KlH78w==\n-----END PRIVATE KEY-----\n",
+            "client_email": "firebase-adminsdk-fbsvc@story-book-56795.iam.gserviceaccount.com",
+            "client_id": "117368611723865974084",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40story-book-56795.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com"
+          }
+      ),
+      scopes);
+  final accessserverkey = client.credentials.accessToken.data;
+  return accessserverkey;
+}
+
+
+
+
+
+
+
+
+
+//motification
+RemoteMessage? messageForTheNotificationScreen;
+ class NotificationHandler {
+  void checkInitialMessage() async {
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      showNotificationScreen=true;
+      it<NotificationBloc>().add(AddNotification(message: initialMessage));
+      messageForTheNotificationScreen=initialMessage;
+    }
+  }
+
+  void initialize() async {
+    //This will Cheack If the app Is opeaned Via a Notification While the app is Compleately cloesd
+    checkInitialMessage();
+    // this Will run When the user tap on the Notification if the app is Forground
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      messageForTheNotificationScreen=message;
+      it<NotificationBloc>().add(AddNotification(message: message));
+      Navigator.pushReplacement(Get.context,MaterialPageRoute(builder: (context) => NotificationScreen(),));
+     });
+    //this wiill runs when the app is open and the messagr recived
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      gt.Get.showSnackbar(gt.GetSnackBar(
+        onTap: (snack) {
+          messageForTheNotificationScreen=message;
+          gt.Get.closeCurrentSnackbar();
+          it<NotificationBloc>().add(AddNotification(message: message));
+          gt.Get.off(NotificationScreen());
+         },
+        title: "New Notification",
+        dismissDirection: DismissDirection.horizontal,
+        message: "You have a new message",
+        duration: Duration(seconds: 3),
+        backgroundColor: Colors.black,
+        borderRadius: 12,
+        margin: EdgeInsets.all(10),
+        snackPosition: gt.SnackPosition.TOP,
+      ));
+    });
+  }
+}
+
+//this function will runes when the app is in the background or in the terminate state
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("object_FROM THE BAEST APROACK+HES");
+}
+*/
