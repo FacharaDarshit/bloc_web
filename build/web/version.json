@@ -200,3 +200,135 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("object_FROM THE BAEST APROACK+HES");
 }
 */
+/*
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart' as gt;
+import 'package:storybook/common/byte_to_image.dart';
+import 'package:storybook/features/splash/domain/model/story_detail_model.dart';
+import '../../di_container.dart';
+import '../../features/database/helper/database_helper.dart';
+import '../../main.dart';
+import '../bloc/notification_bloc.dart';
+import '../screen/notification_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
+
+RemoteMessage? messageForTheNotificationScreen;
+
+Future<Uint8List> downloadImage(String imageUrl) async {
+  final response = await http.get(Uri.parse(imageUrl));
+  if (response.statusCode == 200) {
+    return response.bodyBytes; // Convert image to bytes
+  } else {
+    throw Exception("Failed to download image");
+  }
+}
+
+class NotificationHandler {
+  DateBaseHelper dataBaseHelper = DateBaseHelper.instance;
+
+  void checkInitialMessage() async {
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      ///
+      showNotificationScreen = true;
+      it<NotificationBloc>().add(AddNotification(message: initialMessage));
+      messageForTheNotificationScreen = initialMessage;
+      dataBaseHelper.removeBasedOnName(initialMessage.data["story_name"] ?? "");
+      Topic topic = Topic(
+        topicName: initialMessage.data["story_name"],
+        topicId:10 ,
+        cid:null,
+        topicImage:await downloadImage(initialMessage.data["img_url"]) ,
+        topicStories: initialMessage.notification!.body,
+        topicStoriesIsFav: false,
+        topicLastViewed: "",
+        catId: int.parse(initialMessage.data["cat_id"]),
+      );
+      dataBaseHelper.insertRecent(topic);
+    }
+  }
+
+  void initialize() async {
+    //This will Cheack If the app Is opeaned Via a Notification While the app is Compleately cloesd
+    checkInitialMessage();
+    // this Will run When the user tap on the Notification if the app is Forground
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      messageForTheNotificationScreen = message;
+      it<NotificationBloc>().add(AddNotification(message: message));
+      Navigator.pushReplacement(
+          Get.context,
+          MaterialPageRoute(
+            builder: (context) => NotificationScreen(),
+          ));
+      dataBaseHelper.removeBasedOnName(message.data["story_name"] ?? "");
+      Topic topic = Topic(
+        topicName: message.data["story_name"],
+        topicId:10 ,
+        cid:null,
+        topicImage:await downloadImage(message.data["img_url"]) ,
+        topicStories: message.notification!.body,
+        topicStoriesIsFav: false,
+        topicLastViewed: "",
+        catId: int.parse(message.data["cat_id"]),
+      );
+      dataBaseHelper.insertRecent(topic);
+    });
+
+    //this wiill runs when the app is open and the messagr recived
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      storeTheStoryFromTheNotifi(message);
+      gt.Get.showSnackbar(gt.GetSnackBar(
+        onTap: (snack) async {
+          messageForTheNotificationScreen = message;
+          gt.Get.closeCurrentSnackbar();
+          it<NotificationBloc>().add(AddNotification(message: message));
+          gt.Get.off(NotificationScreen());
+          dataBaseHelper.removeBasedOnName(message.data["story_name"] ?? "");
+          Topic topic = Topic(
+            topicName: message.data["story_name"],
+            topicId:10 ,
+            cid:null,
+            topicImage:await downloadImage(message.data["img_url"]) ,
+            topicStories: message.notification!.body,
+            topicStoriesIsFav: false,
+            topicLastViewed: "",
+            catId: int.parse(message.data["cat_id"]),
+          );
+          dataBaseHelper.insertRecent(topic);
+        },
+        title: message.data["Category"]??"New Notification",
+        dismissDirection: DismissDirection.horizontal,
+        icon: Icon(Icons.notifications,color: Colors.white,),
+        message:message.data["story_name"]?? "You have a new message",
+        duration: Duration(seconds: 3),
+        backgroundColor: Colors.black,
+        borderRadius: 12,
+        margin: EdgeInsets.all(10),
+        snackPosition: gt.SnackPosition.TOP,
+      ));
+    });
+  }
+}
+
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  storeTheStoryFromTheNotifi(message);
+}
+
+Future<void> storeTheStoryFromTheNotifi(RemoteMessage message)async{
+  ///From The splash i have to reload the Story
+  DateBaseHelperTableTopic dateBaseHelperTableTopic=DateBaseHelperTableTopic.instance;
+  Topic topic = Topic(
+      topicName: message.data["story_name"],
+      topicId:10 ,
+      cid:null,
+      topicImage:await downloadImage(message.data["img_url"]) ,
+      topicStories: message.notification!.body,
+  topicStoriesIsFav: false,
+  topicLastViewed: "",
+  catId: int.parse(message.data["cat_id"]),
+  );
+  dateBaseHelperTableTopic.insertrecode(topic);
+}
+*/
